@@ -58,11 +58,11 @@ namespace Lab5
             using (AddForm dodaj = new AddForm())
             {
                 dodaj.ShowDialog(this);
-                if(dodaj.DialogResult == DialogResult.OK)
+                if (dodaj.DialogResult == DialogResult.OK)
                 {
-                    if(db.Polacz() == ConnectionState.Open)
+                    if (db.Polacz() == ConnectionState.Open)
                     {
-                        if(dodaj.Dodany.id == null)
+                        if (dodaj.Dodany.id == null)
                         {
                             MySqlCommand polecenie = new MySqlCommand("INSERT INTO samochody(marka, model, rok_produkcji, pojemnosc_skokowa, moc_silnika, cena) VALUES(?marka,?model,?rok,?pojemnosc,?moc,?cena)", db.Polaczenie);
                             polecenie.Parameters.Add("?marka", MySqlDbType.VarChar).Value = dodaj.Dodany.marka;
@@ -73,7 +73,8 @@ namespace Lab5
                             polecenie.Parameters.Add("?cena", MySqlDbType.Decimal).Value = dodaj.Dodany.cena;
                             try
                             {
-                                dodaj.Dodany.id = (int)polecenie.ExecuteScalar();
+                                polecenie.ExecuteNonQuery();
+                                dodaj.Dodany.id = (int)polecenie.LastInsertedId;
                                 listaAut.Add(dodaj.Dodany);
                                 dataGrid.Rows.Add(dodaj.Dodany.GetGridString());
                             }
@@ -102,45 +103,57 @@ namespace Lab5
 
         private void editBtn_Click(object sender, EventArgs e)
         {
-            if(dataGrid.SelectedRows.Count > 1)
+            if (dataGrid.SelectedRows.Count > 1)
             {
                 statusLabel.Text = "Nie mozna edytowac wiecej niz jeden element";
             }
-            else if(dataGrid.SelectedRows.Count == 1)
+            else if (dataGrid.SelectedRows.Count == 1)
             {
                 int carid = int.Parse(dataGrid.SelectedRows[0].Cells["id"].Value.ToString());
-                foreach(Samochod s in listaAut)
+                Samochod edit = null;
+                foreach (Samochod s in listaAut)
                 {
-                    if(s.id == carid)
+                    if (s.id == carid)
                     {
-/*
- *                             MySqlCommand polecenie = new MySqlCommand("UPDATE samochody set marka=?marka, model=?model,rok_produkcji=?rok,pojemnosc_skokowa=?pojemnosc,moc_silnika=?moc,cena=?cena where id=?id");
-                            polecenie.Parameters.Add("?marka", MySqlDbType.VarChar).Value = dodaj.Dodany.marka;
-                            polecenie.Parameters.Add("?model", MySqlDbType.VarChar).Value = dodaj.Dodany.model;
-                            polecenie.Parameters.Add("?rok", MySqlDbType.Int16).Value = dodaj.Dodany.rok_produkcji;
-                            polecenie.Parameters.Add("?pojemnosc", MySqlDbType.Int16).Value = dodaj.Dodany.pojemnosc;
-                            polecenie.Parameters.Add("?moc", MySqlDbType.Int16).Value = dodaj.Dodany.moc_silnika;
-                            polecenie.Parameters.Add("?cena", MySqlDbType.Decimal).Value = dodaj.Dodany.cena;
-                            polecenie.Parameters.Add("?cena", MySqlDbType.Int16).Value = dodaj.Dodany.id;
+                        edit = s;
+                        break;
+                    }
+                }
+                using (AddForm dodaj = new AddForm(edit))
+                {
+                    dodaj.Show(this);
+                    if (dodaj.DialogResult == DialogResult.OK)
+                    {
+                        if (db.Polacz() == ConnectionState.Open)
+                        {
+                            MySqlCommand polecenie = new MySqlCommand("UPDATE samochody set marka=?marka, model=?model,rok_produkcji=?rok,pojemnosc_skokowa=?pojemnosc,moc_silnika=?moc,cena=?cena where id=?id");
+                            polecenie.Parameters.Add("?marka", MySqlDbType.VarChar).Value = edit.marka;
+                            polecenie.Parameters.Add("?model", MySqlDbType.VarChar).Value = edit.model;
+                            polecenie.Parameters.Add("?rok", MySqlDbType.Int16).Value = edit.rok_produkcji;
+                            polecenie.Parameters.Add("?pojemnosc", MySqlDbType.Int16).Value = edit.pojemnosc;
+                            polecenie.Parameters.Add("?moc", MySqlDbType.Int16).Value = edit.moc_silnika;
+                            polecenie.Parameters.Add("?cena", MySqlDbType.Decimal).Value = edit.cena;
+                            polecenie.Parameters.Add("?id", MySqlDbType.Int16).Value = edit.id;
                             try
                             {
                                 polecenie.ExecuteNonQuery();
                                 int rowIndex = -1;
                                 foreach (DataGridViewRow row in dataGrid.Rows)
                                 {
-                                    if (row.Cells[0].Value.ToString() == dodaj.Dodany.id.ToString())
+                                    if (row.Cells[0].Value.ToString() == edit.ToString())
                                     {
                                         rowIndex = row.Index;
                                         break;
                                     }
                                 }
                                 dataGrid.Rows.RemoveAt(rowIndex);
-                                dataGrid.Rows.Insert(rowIndex, dodaj.Dodany.GetGridString());
+                                dataGrid.Rows.Insert(rowIndex, edit.GetGridString());
                             }
                             catch (Exception ex)
                             {
                                 statusLabel.Text = "Wystapil blad podczas edycji " + ex.Message;
-                            }*/
+                            }
+                        }
                     }
                 }
             }
