@@ -62,8 +62,6 @@ namespace Lab5
                 {
                     if (db.Polacz() == ConnectionState.Open)
                     {
-                        if (dodaj.Dodany.id == null)
-                        {
                             MySqlCommand polecenie = new MySqlCommand("INSERT INTO samochody(marka, model, rok_produkcji, pojemnosc_skokowa, moc_silnika, cena) VALUES(?marka,?model,?rok,?pojemnosc,?moc,?cena)", db.Polaczenie);
                             polecenie.Parameters.Add("?marka", MySqlDbType.VarChar).Value = dodaj.Dodany.marka;
                             polecenie.Parameters.Add("?model", MySqlDbType.VarChar).Value = dodaj.Dodany.model;
@@ -82,11 +80,6 @@ namespace Lab5
                             {
                                 statusLabel.Text = "Wystapil blad podczas dodawania " + ex.Message;
                             }
-                        }
-                        else
-                        {
-
-                        }
                     }
                     else
                     {
@@ -98,7 +91,34 @@ namespace Lab5
 
         private void deleteBtn_Click(object sender, EventArgs e)
         {
-
+            if (dataGrid.SelectedRows.Count > 0)
+            {
+                if (db.Polacz() == ConnectionState.Open)
+                {
+                    foreach (DataGridViewRow row in dataGrid.SelectedRows)
+                    {
+                        MySqlCommand polecenie = new MySqlCommand("DELETE from samochody where id=?id", db.Polaczenie);
+                        polecenie.Parameters.Add("?id", MySqlDbType.Int16).Value = Convert.ToInt32(row.Cells[0].Value);
+                        try
+                        {
+                            polecenie.ExecuteNonQuery();
+                            dataGrid.Rows.RemoveAt(row.Index);
+                        }
+                        catch (Exception ex)
+                        {
+                            statusLabel.Text += "Wystapil blad podczas usuwania " + ex.Message+"\n";
+                        }
+                    }
+                }
+                else
+                {
+                    statusLabel.Text = "Sprawdź połączenie z bazą (Stan: " + db.Polacz() + ")";
+                }
+            }
+            else
+            {
+                statusLabel.Text = "Nic zaznaczono żadnego obiektu";
+            }
         }
 
         private void editBtn_Click(object sender, EventArgs e)
@@ -121,12 +141,12 @@ namespace Lab5
                 }
                 using (AddForm dodaj = new AddForm(edit))
                 {
-                    dodaj.Show(this);
+                    dodaj.ShowDialog(this);
                     if (dodaj.DialogResult == DialogResult.OK)
                     {
                         if (db.Polacz() == ConnectionState.Open)
                         {
-                            MySqlCommand polecenie = new MySqlCommand("UPDATE samochody set marka=?marka, model=?model,rok_produkcji=?rok,pojemnosc_skokowa=?pojemnosc,moc_silnika=?moc,cena=?cena where id=?id");
+                            MySqlCommand polecenie = new MySqlCommand("UPDATE samochody set marka=?marka, model=?model,rok_produkcji=?rok,pojemnosc_skokowa=?pojemnosc,moc_silnika=?moc,cena=?cena where id=?id", db.Polaczenie);
                             polecenie.Parameters.Add("?marka", MySqlDbType.VarChar).Value = edit.marka;
                             polecenie.Parameters.Add("?model", MySqlDbType.VarChar).Value = edit.model;
                             polecenie.Parameters.Add("?rok", MySqlDbType.Int16).Value = edit.rok_produkcji;
@@ -140,7 +160,7 @@ namespace Lab5
                                 int rowIndex = -1;
                                 foreach (DataGridViewRow row in dataGrid.Rows)
                                 {
-                                    if (row.Cells[0].Value.ToString() == edit.ToString())
+                                    if (row.Cells[0].Value.ToString() == edit.id.ToString())
                                     {
                                         rowIndex = row.Index;
                                         break;

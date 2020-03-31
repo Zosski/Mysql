@@ -22,13 +22,15 @@ namespace Lab5
 
         public AddForm(Samochod car)
         {
+            InitializeComponent();
             Dodany = car;
-            markaBox.Text = Dodany.marka;
-            modelBox.Text = Dodany.model;
-            pojemBox.Text = Dodany.pojemnosc.ToString();
-            cenaBox.Text = Dodany.cena.ToString();
-            mocBox.Text = Dodany.moc_silnika.ToString();
-            rokBox.Text = Dodany.rok_produkcji.ToString();
+                markaBox.Text = Dodany.marka;
+                modelBox.Text = Dodany.model;
+                pojemBox.Text = Dodany.pojemnosc.ToString();
+                cenaBox.Text = Dodany.cena.ToString();
+                mocBox.Text = Dodany.moc_silnika.ToString();
+                rokBox.Text = Dodany.rok_produkcji.ToString();
+            addBtn.Text = "Zapisz zmiany";
         }
 
         private void addBtn_Click(object sender, EventArgs e)
